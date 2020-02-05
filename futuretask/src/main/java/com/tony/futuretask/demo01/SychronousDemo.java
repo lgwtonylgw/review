@@ -16,8 +16,11 @@ public class SychronousDemo {
         new Thread(()->{
             System.out.println(Thread.currentThread().getName()+"开始生产");
             try {
+                System.out.println("生产a");
                 sycchronous.put("a");
+                System.out.println("生产b");
                 sycchronous.put("b");
+                System.out.println("生产c");
                 sycchronous.put("c");
             } catch (InterruptedException e) {
                 e.printStackTrace();
