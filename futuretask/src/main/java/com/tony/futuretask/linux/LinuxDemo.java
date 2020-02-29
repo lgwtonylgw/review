@@ -19,6 +19,7 @@ package com.tony.futuretask.linux;
 public class LinuxDemo {
     /**
      * 1. useradd 添加用户    -d   指定目录   -g  指定组    passwd tony   指定密码      userdel  用户名   删除用户    -r   home下目录一块删除
+     *              free -m   M为单位     -g   G为单位        free    以K为单位
      * 2.查询用户信息  ：   id 用户名   id root
      * 3.切换用户：   su - 用户名      su root     退出：exit    logout
      *4.查看当前用户：   whoami
@@ -45,7 +46,7 @@ public class LinuxDemo {
      *                    find /  -size  +20M  按照文件大小来查找  大于20M  +大于  等于   -小于
      *                    locate    先updatedb 然后locate   文件名
      *                    cat hello.txt | grep -n -i yes
-     *
+     *  
      *                    zip/unzip:   压缩指令    -r  递归压缩   -d    解压指定文件夹   zip -r mypackage.zip /home/tony/*
      *                    tar    tar -zcvf a.tar.gz  a.txt b.txt    压缩   tar -zxvf   a.tar.gz    -C   解压到指定目录
      *
