@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30ms
+spring:
+  cache:
+    type: redis
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 1
+    lettuce:
+      pool:
+        max-active: 100

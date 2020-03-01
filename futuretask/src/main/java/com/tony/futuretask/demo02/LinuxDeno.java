@@ -6,7 +6,7 @@ package com.tony.futuretask.demo02;
  * @author Tony
  * @description:
  */
-public class LinuxDeno {
+public class  LinuxDeno {
     /**
      * top uptime   主要查看整机性能     主要看参数load average    和   cpm mem
      * vmstat -n 2 3   主要用来查看cpu
