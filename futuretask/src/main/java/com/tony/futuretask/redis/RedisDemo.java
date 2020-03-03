@@ -142,6 +142,34 @@ public class RedisDemo {
      *                       appendfsync no
      *                       bgrewriteaof   重写aof文件，进行压缩
      *
+     *redis集群搭建：          yum -y install ruby
+     *                         yum -y install rubygems
+     *                         复制redis-3.2.0.gem到opt下   然后执行   gem install --local redis-3.2.0.gem
+     *                         相比主从复制多了一下：
+     *                              cluster-enabled yes   打开集群模式
+     *                               cluster-config-file nodes-6379.conf   设置节点配置文件名
+     *                              cluster-node-timeout 15000 设置节点失联时间，超过此时间，集群自动进行主从切换
+     *                        3台主机3台从机，，，编写redis.conf 增加以上内容
+     *                        cd /opt/redis-5.0.7/src
+     *                                  ./redis-trib.rb create --replicas 1 49.234.77.54:6379 49.234.77.54:6380 49.234.77.54:6381 49.234.77.54:6389 49.234.77.54:6390
+     *                                  49.234.77.54:6391    不能用127.0.0.1   用真实ip   过期了
+     *                        redis-cli --cluster create 49.234.77.54:6379 49.234.77.54:6380 49.234.77.54:6381 49.234.77.54:6389 49.234.77.54:6390 49.234.77.54:6391 --cluster-replicas 1 -a mrice
+     *                        redis-cli --cluster create 127.0.0.1:6379 127.0.0.1:6380 127.0.0.1:6381 127.0.0.1:6389 127.0.0.1:6390 127.0.0.1:6391 --cluster-replicas 1  采用这个
+     *                        然后  redis-cli -c -p 6379去访问客户端，会在主机上不断切换 -c实现自动重定向
+     *                        cluster keyslot key 计算key应该放在那个插槽上
+     *                        cluster countkeysinslot slot  获取插槽上key的数量
+     *                        cluster getkeysinslot slot count 获取count个key
+     *
+     *                        还可以配置cluster-require-full-coverage
+     *                        jedis连接集群：
+     *                              Set<HostAndPort> set=new HashSet</HostAndPort>
+     *                              set.add(new HostAndPort("127.0.0.1",6379));
+     *                              set.add(new HostAndPort("127.0.0.1",6380));
+     *                              ...
+     *                              JedisCluster j=new JedisCluster(set)
+     *                              j.set(:k1","v1")
+     *
+     *
      *
      */
 }
