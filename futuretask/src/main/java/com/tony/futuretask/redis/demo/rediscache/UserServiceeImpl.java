@@ -41,7 +41,7 @@ public class UserServiceeImpl implements UserService {
 
     @Override
     @Cacheable(value = "user",key = "#id")
-    public User get(Integer id) {
+    public User  get(Integer id) {
         log.info("进入get方法，当前对象：{}",map.get(id)==null?null:map.get(id).toString());
 
         return map.get(id);

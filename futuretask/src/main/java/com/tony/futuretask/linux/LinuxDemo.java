@@ -17,6 +17,11 @@ package com.tony.futuretask.linux;
  *            yy p  拷贝一行    dd 删除一行
  */
 public class LinuxDemo {
+
+
+    /**
+     * vim   :set number  显示行号   :set nonumber 不显示行号     :%s/6379/6380   把文件中的6379全部替换为6380
+     */
     /**
      * 1. useradd 添加用户    -d   指定目录   -g  指定组    passwd tony   指定密码      userdel  用户名   删除用户    -r   home下目录一块删除
      *              free -m   M为单位     -g   G为单位        free    以K为单位
