@@ -67,6 +67,11 @@
             <artifactId>spring-session-data-redis</artifactId>
             <version>2.1.6.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.14</version>
+        </dependency>
     </dependencies>
 
     <build>
