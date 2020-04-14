@@ -1,0 +1,177 @@
+1.关闭防火墙：
+    service iptables stop     systemctl stop firewalld
+    chkconfig iptables off   //关闭开机自启动   systemctl disable firewalld
+2.创建一个一般用户：
+    useradd atguigu
+    passwd atguigu
+3.在opt下创建两个文件夹：
+   mkdir /opt/module    /opt/software
+   chown atguigu:atguigu /opt/module    /opt/software
+4.把这个用户加到sudoers  ：
+    vim /etc/sudoers   atguigu ALL=(ALL)   NOPASSWD: ALL
+5.修改host文件：
+    vim /etc/hosts
+    127.0.0.1    hadoop100
+    127.0.0.1    hadoop101
+    127.0.0.1    hadoop102
+    127.0.0.1    hadoop103
+    127.0.0.1    hadoop104
+    127.0.0.1    hadoop105
+    127.0.0.1    hadoop106
+    127.0.0.1    hadoop107
+    127.0.0.1    hadoop108
+    127.0.0.1    hadoop109
+    每复制一个机子，就要做一遍这个
+8.安装java和hadoop:
+    rpm -qa | grep java | xargs sudo rpm -e --nodeps  //先删除原来安装的java
+    1）cd /opt/software  tar -zxvf jdk -C /opt/module
+                         tar -zxf   hadoop -C /opt/module
+                            因为现在是atguigu用户，所以要sudo vim /etc/profile
+                            export JAVA_HOME=/opt/module/jdk8
+                            export PATH=$PATH:$JAVA_HOME/bin
+                            export HADOOP_HOME=/opt/module/hadoop272
+                            export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+                            source /etc/profile    java -version    hadoop version
+     2)配置hadoop:
+        https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SingleCluster.html  //官网配置单点
+         etc/hadoop/hadoop-env.sh
+           # set to the root of your Java installation
+           export JAVA_HOME=/usr/java/latest
+     3)完全分布式配置：
+        远程拷贝：   scp  -r  haoop100:/opt/module/hadoop-2.7.2 hadoop101:/opt/module    权限不可拷贝
+                     rsync  -av hadoop100:/opt/module/hadoop-2.7.2    /opt/module    归档拷贝，，权限也拷贝，已经存在的文件不拷贝
+                    编写批量脚本把文件复制到hadoop集群的每一个主机上  xsync   chmod +x xsync  然后把命令加到bin下面   sudo cp xsync /bin 然后哪里都可以用xsync了    echo $PATH
+                    然后把配置好的东西发过去 sudo xsync /bin/xsync      xsync /opt/module/hadoop-2.7.2   xsync /opt/module/jdk8    sudo xsync /etc/profile
+        集群机子分配：
+                    hadoop100            hadoop101        hadoop102
+              hdfs  NodeName            SecondaryNodeName
+                    DataName            DataName            DataName
+              yarn  NodeManager         NodeManager        NodeManager
+                                                            ResourceManager
+        修改配置文件：
+                    /etc/hadoop/
+                    四个xml   四个env.sh
+                    env.sh只要修改java_home = /opt/module/jdk
+                    core-site.xml:
+                        1)指定HDFS中NameNode的地址
+                        <configuration>
+                            <property>
+                                <name>fs.defaultFS</name>
+                                <value>hdfs://hadoop100:9000</value>
+                            </property>
+                            指定hadoop运行时产生文件的存储目录
+                            <property>
+                                <name>hadoop.tem.dir</name>
+                                <value>/opt/module/hadoop-2.7.2/data/tmp</value>
+                            </property>
+                        </configuration>
+                        2)修改hdfs-site.xml:
+                            <configuration>
+
+                                <property>
+                                    <name>dfs.replication</name>
+                                    <value>3</value>
+                                </property>
+                                指定hadoop辅助名称节点配置
+                                <property>
+                                    <name>dfs.namenode.secondary.http-address</name>
+                                    <value>hadoop101:50090</value>
+                                </property>
+                            </configuration>
+                         3) 修改mapreduce-site.xml:
+                             <property>
+                                    <name>mapreduce.framework.name</name>
+                                    <value>yarn</value>
+                                </property>
+                          4)修改yarn-site.yml
+                                <configuration>
+
+                                <property>
+                                    <name>yarn.nodemanager.aux-services</name>
+                                    <value>mapreduce_shuffle</value>
+                                </property>
+                                指定yarn的ResourceManager的地址
+                                <property>
+                                    <name>yarn.resourcemanager.hostname</name>
+                                    <value>hadoop102</value>
+                                </property>
+                            </configuration>
+
+                            最后xsync   etc  (在hadoop-2.7.2下面）将修改的配置文件分发下去
+        开始初始化环境：
+                        hadoop100:
+                            hdfs  namenode -format   格式化namenode
+                            hadoop-daemon.sh start namenode   启动namenode
+                            hadoop-daemon.sh start datanode   启动datanode      //jps查看 进程
+                        hadoop101:
+                            hadoop-daemon.sh start datanode
+                            hadoop-daemon.sh start secondarynamenode
+                        hadoop102:
+                            hadoop-daemon.sh start datanode
+                        然后连接访问：   hadoop100:50070/dfshealth.html 可以看到四个节点了
+        ssh对称加密：免密登录
+                    在hadoop100得/home/tony  目录下（tony)用户
+                    ssh-keygen -t rsa
+                    ssh-copy-id hadoop101
+                    就可以直接连接hadoop101了   ssh hadoop101
+
+        集群单点启动：
+                    修改hadoop100  etc/hadoop/slaves       vim slaves      添加hadoop100   hadoop101  hadoop102    然后同步到其他服务器上  xsybc etc   就可以群起了hdfs   start-dfs.sh
+                    然后可以群起yarn   在hadoop102上  start-yarn.sh      jps查看   hadoop102上有RM   NM   其他两个有NM
+                    通过log/  可以查看日志
+
+                    之后通过hadoop100:50070   hadoop102:8088可以查看页面
+        使用hadoop：
+                    将文件上传到hdfs：   hadoop fs -put   wcinput /  (此时wcinput下面有一个wc.input文件可以统计相同单词数量
+                    然后运行mapreduce:    hadoop  jar share/hadoop/mapreduce/hadoop-mapreduce-example   wordcount  /wcinput
+        配置历史服务器：
+                      stop-dfs.sh   stop-yarn.sh
+                      修改   mapred-site.xml
+                        <property>
+                        历史服务器地址
+                            <name>mapreduce.history.address</name>
+                            <value>hadoop100:10020</value>
+                        </property>
+                        历史服务器web端的地址
+                        <property>
+                            <name>mapreduce.history.webapp.address</name>
+                            <value>hadoop100:19888</value>
+                        </property>
+                      启动历史服务器：
+                            在hadoop-2.7.2目录下：  sbin/mr-jobhistory-daemon.sh start historyserver     jps
+                      然后就可以查看log了：    hadoop100:19888/jobhistory     或者通过hadoop102:8088上面点击history
+        聚集日志：
+                 需要重启NodeManager  ResourceManager   HistoryManager
+                 vim  yarn-site.yml
+                        <property>
+                        开启日志聚合
+                            <name>yarn.log-aggregate-enable</name>
+                            <value>true</value>
+                        </property>
+                        日志保留时间  7 天
+                        <property>
+                            <name>yarn.log-aggregate.retain-seconds</name>
+                            <value>604800</value>
+                        </property>
+                        不能忘记同步配置   xsync   etc
+                        然后重启start-dfs.sh    start-yarn.sh    mr-jobjistory-daemon.sh start historyserver      jpsall
+        集群时间同步：
+                        1.产看是否安装了ntp:     rpm -qa | grep ntp    先全部关闭   systemctl stop ntpd    chkconfig ntpd off
+                        2.修改ntp配置文件：vim  /etc/ntp.conf
+                                #restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap   开启
+                                #server 0.centos.pool.ntp.org iburst
+                                #server 1.centos.pool.ntp.org iburst
+                                #server 2.centos.pool.ntp.org iburst
+                                #server 3.centos.pool.ntp.org iburst     注释掉
+                                添加：  server 127.127.1.0
+                                        fudge 127.127.1.0  stratum 10
+                        3.修改/etc/sysconfig/ntpd
+                                SYNC_HWCLOCK=yes
+                        4.重启ntp服务：
+
+                        5.其他机器定时从上面的服务器拉取时间：
+                                crontab -e
+                                * /10 * * * *  /usr/sbin/ntpdate hadoop 100
+                                修改任意服务器时间：   date -s '2020-04-10 18:00:00'
+
+

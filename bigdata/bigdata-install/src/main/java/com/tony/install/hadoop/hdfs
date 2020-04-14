@@ -1,0 +1,27 @@
+hsdf相关命令   先启动hadoop集群   start-dfs.sh cd到hadoop-2.7.2下面
+        1.bin/hadoop fs  -put etc   / 和bin/hdfs dfs -put etc /    这两个一样 把etc上传到根目录
+        2.hadoop fs -help   查看命令帮助
+        3.hadoop fs -copyFromLocal etc /  跟-put一模一样
+
+
+        hadoop fs 命令分类
+            1：本地  》  hdfs
+                put
+                copyFromLocal
+                moveFromLocal
+                appendToFile
+            2. hdfs  >  hdfs
+                mv
+                cp
+                chmod
+                chown
+                chgrp
+                mkdir
+                du
+                df
+                cat
+                rm
+            3.hdfs  >  本地：
+                get
+                getmerge
+                copyToLocal
