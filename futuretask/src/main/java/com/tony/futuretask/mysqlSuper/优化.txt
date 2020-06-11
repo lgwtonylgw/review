@@ -1,0 +1,60 @@
+安装：
+    docker pull mysql:5.7
+    docker run -p 3306:3306 --name mysql \
+    -v /mydata/mysql/log:/var/log/mysql \
+    -v /mydata/mysql/data:/var/lib/mysql \
+    -v /mydata/mysql/conf:/etc/mysql \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -d mysql:5.7
+
+    1.查看mysql安装时创建的用户和组：
+        cat /etc/passwd | grep mysql     cat /etc/group | grep mysql   mysqladmin --version
+     2.mysql -uroot -proot --default-character-set=utf8
+    3.查看字符集：  show variables like 'character%';   或者   show variables like '%char%';
+    4.linux下修改my.cnf    :set nu 显示行号   o 编辑下一行
+    5.https://jingyan.baidu.com/article/046a7b3e9cecfaf9c37fa96b.html   这个是把docker的my.cnf辅助出来的方法
+    6,查看默认存储引擎： show variables like '%storage_engine%';
+    7:sql执行顺序：
+	(1) FROM:对FROM子句中的左表<left_table>和右表<right_table>执行笛卡儿积，产生虚拟表VT1;
+(2) ON: 对虚拟表VT1进行ON筛选，只有那些符合<join_condition>的行才被插入虚拟表VT2;
+(3) JOIN: 如果指定了OUTER JOIN(如LEFT OUTER JOIN、RIGHT OUTER JOIN)，那么保留表中未匹配的行作为外部行添加到虚拟表VT2，产生虚拟表VT3。如果FROM子句包含两个以上的表，则对上一个连接生成的结果表VT3和下一个表重复执行步骤1~步骤3，直到处理完所有的表;
+(4) WHERE: 对虚拟表VT3应用WHERE过滤条件，只有符合<where_condition>的记录才会被插入虚拟表VT4;
+(5) GROUP By: 根据GROUP BY子句中的列，对VT4中的记录进行分组操作，产生VT5;
+(6) CUBE|ROllUP: 对VT5进行CUBE或ROLLUP操作，产生表VT6;
+(7) HAVING: 对虚拟表VT6应用HAVING过滤器，只有符合<having_condition>的记录才会被插入到VT7;
+(8) SELECT: 第二次执行SELECT操作，选择指定的列，插入到虚拟表VT8中;
+(9) DISTINCT: 去除重复，产生虚拟表VT9;
+(10) ORDER BY: 将虚拟表VT9中的记录按照<order_by_list>进行排序操作，产生虚拟表VT10;
+(11) LIMIT: 取出指定街行的记录，产生虚拟表VT11，并返回给查询用户
+
+
+	8：哪些情况需要建立索引：	
+	    a.主键自动建立唯一索引
+	    b.频繁作为查询条件的字段需要建立索引。索引建立在经常查询的字段上
+	    c.外键需要建立索引
+	    d.频繁更新的字段不要建立索引
+	   e.where条件里用不到的字段不需要建立索引
+	    f.排序，统计，分组的字段需要建立索引
+	    h.高并发下适合建立复合索引
+	    i.重复多的字段不要建立索引，要不然会走全表
+
+
+	9.性能分析：
+	   type从最优到最差：system>const>eq_ref>ref>range>index>ALL(全哪表扫描）   至少要达到range  ref级别	
+			eq_ref唯一性索引扫描   ref非唯一性索引扫描     range范围索引扫描   index全索引扫描
+
+	10.优化：
+	   1.左连接，右表加索引。
+	   2.order by走索引：   order by之后遵循最左前列原则    where和order by遵循最左前缀原则  a_b_c(a,b,c)    where a=const order by b,c; 常量	可以，范围则不可以
+		order by查询时select * 是一个大忌，因为数据量过多会把sort_buffer占满了，大于sort_buffer_size, 就会再查几次，增加io
+	   3.group by:
+		最佳左前缀原则，同order by
+	 慢查询日志：
+		show variables like '%slow_query_log%';
+		开启： set global slow_query_log = 1;重启mysql后会失效 如果让他永久生效，修改my.cnf配置文件
+		查询最长慢查询阈值： show variables like '%long_query_time%';  设置： set global long_query_time = 3;修改后重新建链接才能发现修改
+		查看慢日志：直接查看日志文件；  或者慢查询数量：show global status like '%Slow_queries%';
+		mysqldumpslow   mysql慢日志分析工具
+	show profiles:
+		查看日志；show variables like '%profile%';    set profile=on;
+		show profile cpu,block io for query [query_id] ;
