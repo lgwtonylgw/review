@@ -21,6 +21,8 @@ public class LinuxDemo {
 
     /**
      * vim   :set number  显示行号   :set nonumber 不显示行号     :%s/6379/6380   把文件中的6379全部替换为6380
+     * 在光标下方新建一行,并且进入插入模式:o(小写字母o)
+     * 删除一行：dd
      */
     /**
      * 1. useradd 添加用户    -d   指定目录   -g  指定组    passwd tony   指定密码      userdel  用户名   删除用户    -r   home下目录一块删除

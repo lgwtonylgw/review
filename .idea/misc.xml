@@ -7,6 +7,9 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/futuretask/pom.xml" />
+        <option value="$PROJECT_DIR$/xiangxue/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/algorithms/pom.xml" />
       </list>
     </option>
   </component>

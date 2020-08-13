@@ -171,10 +171,15 @@ public class RedisDemo {
      *
      *
      *
-     * docker 安装redis        docker pull redis:5.0
+     * docker 安装redis
+     *                      mkdir -p /mydata/redis/conf
+     *                      touch /mydata/redis/conf/redis.conf
+     *
+     *                          docker pull redis
      *                         docker run -p 6379:6379 --name redis \
      *                         -v /mydata/redis/data:/data \
-     *                         -d redis:5.0 redis-server --appendonly yes
+     *                         -v /mydata/redis/conf/redis.conf:/etc/redis/redis.conf  \
+     *                         -d redis redis-server /etc/redis/redis.conf
      *
      *
      */
